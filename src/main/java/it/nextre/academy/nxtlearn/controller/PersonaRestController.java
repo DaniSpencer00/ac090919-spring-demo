@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/personaRest")
@@ -35,7 +36,7 @@ public class PersonaRestController {
             personaService.deletePersonaById(id);
             return tmp;
         } else {
-            System.out.println("sasso");
+            //System.out.println("sasso");
             throw new PersonaNotFoundException();
         }
     }
@@ -50,7 +51,7 @@ public class PersonaRestController {
             String errs = validator.getAllErrors()
                     .stream()
                     .map(e -> e.getDefaultMessage())
-                    .reduce("", (a, b) -> a += "\n" + b);
+                    .collect(Collectors.joining(", "));
             throw new BadRequestException(errs);
         }
 
