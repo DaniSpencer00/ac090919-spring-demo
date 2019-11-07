@@ -2,60 +2,97 @@ package it.nextre.academy.nxtlearn.controller;
 
 import it.nextre.academy.nxtlearn.exception.BadRequestException;
 import it.nextre.academy.nxtlearn.exception.NotFoundException;
+import it.nextre.academy.nxtlearn.exception.PersonaNotFoundException;
 import it.nextre.academy.nxtlearn.model.Persona;
-import it.nextre.academy.nxtlearn.service.PersonaService;
+import it.nextre.academy.nxtlearn.service.impl.PersonaServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/personaRest")
 public class PersonaRestController {
-
     @Autowired
-    PersonaService personaService;
-    /*@Autowired
-    Logger logger;*/
-    Logger logger= LoggerFactory.getLogger(this.getClass());
+    PersonaServiceImpl personaService = new PersonaServiceImpl();
+    // todo creare un bean conosciuto da spring in modo da collegarlo al logger
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @DeleteMapping("/deleteById/{id}")
-    public boolean deleteIdPersone(@PathVariable("id")Integer id){
-        logger.info("LOG deleteByIdPersone()   id="+id);
-        boolean status=personaService.deletePersonaById(id);
-            //model.addAttribute("persona",new Persona());
-        return status;
+    //   @Autowired
+    //   Logger logger;
+
+    @DeleteMapping({"/removeById/{id}", "/deleteById/{id}"})
+    public Persona deleteById(@PathVariable("id") Integer id) {
+        logger.info("LOG: deleteById, id=" + id);
+        Persona tmp = personaService.getPersonaById(id);
+        if (tmp != null) {
+            personaService.deletePersonaById(id);
+            return tmp;
+        } else {
+            System.out.println("sasso");
+            throw new PersonaNotFoundException();
+        }
     }
 
-    @PostMapping("/createPersona")
-    public Persona createPersona(@RequestBody Persona newPersona){
-        logger.info("LOG createPersona()");
-        if(newPersona!=null && newPersona.getId()==null)
-            return personaService.create(newPersona);
-        return null;
-        //todo fare eccezione bad request
+
+    @PostMapping({"/add", "/create"})
+    public Persona addOne(@RequestBody @Valid Persona tmp, BindingResult validator) {
+        logger.debug("LOG: addOne()");
+
+        if (validator.hasErrors()) {
+            logger.debug("LOG: validator.hasErrors()");
+            String errs = validator.getAllErrors()
+                    .stream()
+                    .map(e -> e.getDefaultMessage())
+                    .reduce("", (a, b) -> a += "\n" + b);
+            throw new BadRequestException(errs);
+        }
+
+
+
+        if (tmp != null) {
+            personaService.create(tmp);
+        }
+        return tmp;
     }
 
-    @GetMapping
-    public List<Persona> getPersone(){
-        logger.info("LOG getPersone()");
+
+    @GetMapping({"/findById/{id}", "/{id}", "/getById/{id}", "/get/{id}"})
+    public Persona getByID(@PathVariable("id") Integer id) {
+        logger.info("LOG: getById, id=" + id);
+        Persona tmp = personaService.getPersonaById(id);
+        if (tmp != null) {
+            return tmp;
+        } else {
+            throw new PersonaNotFoundException();
+        }
+    }
+
+
+    @GetMapping({"/", "/all"})
+    public List<Persona> getPersone() {
+        logger.info("Log: getPersone()");
         return personaService.getPersone();
     }
-    @PutMapping("/{id}")
-    public Persona editPersona(@RequestBody Persona p,@PathVariable ("id") Integer id){
-        logger.info("LOG updatePersona() id:"+id);
-        if(p!=null && p.getId().equals(id)) {
+
+    @PutMapping("/update/{id}")
+    public Persona editOne(@RequestBody Persona p, @PathVariable("id") Integer id) {
+        logger.info("Log: update()");
+        if (p != null && p.getId().equals(id)) {
             Persona tmp = personaService.update(p);
-            if (tmp != null)
+            if (tmp != null) {
                 return tmp;
-            else
+            } else {
                 throw new NotFoundException();
+            }
         }
-        throw new BadRequestException();
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
-
-
 
 }//end class

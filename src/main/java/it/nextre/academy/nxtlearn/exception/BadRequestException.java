@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
 @ControllerAdvice
 public class BadRequestException extends RuntimeException{
 
@@ -16,5 +15,9 @@ public class BadRequestException extends RuntimeException{
     public ResponseEntity handleBadRequest(NotFoundException msg){
         logger.debug("Bad Request REST");
         return new MyErrorPage(HttpStatus.BAD_REQUEST,msg.getMessage()).getPage();
+    }
+
+    public BadRequestException(String message){
+        super(message);
     }
 }//end class
