@@ -17,16 +17,16 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public Persona getRandom() {
-        Persona p=new Persona();
+        Persona p = new Persona();
         p.setNome(DammiDato.getNome());
         p.setCognome(DammiDato.getCognome());
-        p=personaRepository.save(p);
+        p = personaRepository.save(p);
         return p;
     }
 
     @Override
     public List<Persona> getRandoms(Integer numero) {
-        List <Persona> tmp=new ArrayList<>();
+        List<Persona> tmp = new ArrayList<>();
         for (int i = 0; i < numero; i++) {
             tmp.add(getRandom());
         }
@@ -35,31 +35,37 @@ public class PersonaServiceImpl implements PersonaService {
 
     @Override
     public List<Persona> getPersone() {
-        return personaRepository.getAll();
+        return personaRepository.findAll();
     }
 
     @Override
     public Persona getPersonaById(Integer id) {
-        return personaRepository.getPersonaById(id);
+        return personaRepository.findById(id).orElse(null);
     }
 
     @Override
     public boolean deletePersonaById(Integer id) {
-        if(id!=null && id>=0)
-            return personaRepository.deletePersonaById(id);
+        if (id != null && id >= 0) {
+            try {
+                personaRepository.deletePersonaById(id);
+                return true;
+            } catch (RuntimeException e) {
+                return false;
+            }
+        }
         return false;
     }
 
     @Override
     public Persona create(Persona p) {
-        if(p!=null && p.getId()==null)
-            p = personaRepository.create(p);
+        if (p != null && p.getId() == null)
+            p = personaRepository.save(p);
         return p;
     }
 
     @Override
     public Persona update(Persona p) {
-        if(p!=null && getPersonaById(p.getId())!=null)
+        if (p != null && getPersonaById(p.getId()) != null)
             return personaRepository.save(p);
         return null;
     }
