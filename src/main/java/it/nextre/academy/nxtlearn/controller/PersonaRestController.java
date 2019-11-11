@@ -1,5 +1,6 @@
 package it.nextre.academy.nxtlearn.controller;
 
+import it.nextre.academy.nxtlearn.dto.PersonaDto;
 import it.nextre.academy.nxtlearn.exception.BadRequestException;
 import it.nextre.academy.nxtlearn.exception.NotFoundException;
 import it.nextre.academy.nxtlearn.exception.PersonaNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,14 +67,13 @@ public class PersonaRestController {
 
 
     @GetMapping({"/findById/{id}", "/{id}", "/getById/{id}", "/get/{id}"})
-    public Persona getByID(@PathVariable("id") Integer id) {
-        logger.info("LOG: getById, id=" + id);
+    public PersonaDto getByID(@PathVariable("id") Integer id) {
+        logger.debug("GET Persona.getOne() with id: "+id);
         Persona tmp = personaService.getPersonaById(id);
-        if (tmp != null) {
-            return tmp;
-        } else {
+        if (tmp!=null) {
+            return personaService.toDto(tmp);
+        } else
             throw new PersonaNotFoundException();
-        }
     }
 
 

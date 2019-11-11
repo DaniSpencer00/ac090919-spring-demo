@@ -1,33 +1,63 @@
 package it.nextre.academy.nxtlearn.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Null;
+import javax.validation.constraints.Size;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "guide")
+@Table(name = "guida")
 @Data
-@AllArgsConstructor @NoArgsConstructor
+@NoArgsConstructor @AllArgsConstructor
+@JsonIdentityInfo(
+        generator= ObjectIdGenerators.PropertyGenerator.class,
+        property="id")
 public class Guida extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @NotNull @NotBlank @Size(min = 1,max = 255,message = "Nome guida compreso tra 1 e 255 caratteri")
+
+
+    @Size(min=1,max=255,message = "Nome guida compreso tra 1 e 255 caratteri")
+    @NotEmpty @NotBlank
     private String nome;
-    @Null @Size(max = 255,message = "Url guida max 255 caratteri")
+
+    @Size(max=255,message = "URL guida max 255 caratteri")
+    @Null
     private String url;
-    @Type(type = "text")
+
+    @Type(type="text") // LONGTEXT in mySQL
+    // @Lob
+    @Null
     private String descrizione;
-    @Null @Size(max = 255,message = "Url immaagine max 255 caratteri")
+
+    @Size(max=255,message = "Path immagine max 255 caratteri")
+    @Null
     private String imagePath;
+
     @ManyToOne
     private Livello livello;
+
+    /*
+    //SCELTO DI FARE UNA TABELLA CON CAMPI EXTRA
+    @JsonBackReference
     @ManyToMany(mappedBy = "guide")
-    List<Persona> persone;
+    private List<Persona> persone;
+    */
+
+    @OneToMany(mappedBy = "guida")
+    @JsonManagedReference
+    private List<PersonaGuida> persone;
+
 
 }//end class
